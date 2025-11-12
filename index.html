@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-to" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Freelance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#3B82F6',
+              secondary: '#F9FAFB',
+              accent: '#10B981',
+              'text-primary': '#111827',
+              'text-secondary': '#4B5563',
+              border: '#E5E7EB',
+              card: '#FFFFFF',
+              'status-available': '#D1FAE5',
+              'status-available-text': '#065F46',
+              'status-progress': '#FEF3C7',
+              'status-progress-text': '#92400E',
+              'status-delivered': '#DBEAFE',
+              'status-delivered-text': '#1E40AF',
+              'status-completed': '#D1FAE5',
+              'status-completed-text': '#047857',
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            keyframes: {
+              'fade-in': {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+               'fade-in-up': {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              'slide-in-right': {
+                 '0%': { opacity: '0', transform: 'translateX(-20px)' },
+                 '100%': { opacity: '1', transform: 'translateX(0)' },
+              },
+            },
+            animation: {
+              'fade-in': 'fade-in 0.2s ease-out',
+              'fade-in-up': 'fade-in-up 0.3s ease-out',
+              'page-enter': 'fade-in-up 0.25s ease-out',
+              'tab-content-enter': 'slide-in-right 0.3s ease-out',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #F9FAFB;
+        font-family: 'Inter', sans-serif;
+      }
+       .animate-fade-in-up {
+        animation: fade-in-up 0.3s ease-out forwards;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.5"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
