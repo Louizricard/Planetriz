@@ -4,67 +4,100 @@ import { useI18n } from '../hooks/useI18n';
 import { PaperclipIcon, SendIcon } from '../components/Icons';
 import { NotFoundPage } from './NotFoundPage';
 import { useApp } from '../hooks/useApp';
+import { Message, User } from '../types';
+import { supabase } from '@/integrations/supabase/client';
 
 export const ChatPage: React.FC = () => {
-  const { id: otherUserId } = useParams<{ id: string }>();
+  const { serviceId } = useParams<{ serviceId: string }>();
   const { t } = useI18n();
-  const { currentUser, users, chats, sendMessage } = useApp();
+  const { currentUser, users, services, sendMessage } = useApp();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const otherUser = users.find(u => u.id === otherUserId);
+  const service = services.find(s => s.id === serviceId);
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!serviceId) return;
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('service_id', serviceId)
+        .order('created_at', { ascending: true });
+      
+      if (error) {
+        console.error('Error fetching messages:', error);
+      } else {
+        setMessages(data as Message[]);
+      }
+    };
+    fetchMessages();
+
+    const subscription = supabase
+      .channel(`messages:${serviceId}`)
+      .on('postgres_changes', 
+          { event: 'INSERT', schema: 'public', table: 'messages', filter: `service_id=eq.${serviceId}` }, 
+          (payload) => {
+              setMessages(currentMessages => [...currentMessages, payload.new as Message]);
+          }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [serviceId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chats]);
-  
-  if(!currentUser){
-    return <NotFoundPage />;
-  }
-  
-  if(!otherUser){
-    return <p>Loading user...</p>
-  }
+  }, [messages]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if(newMessage.trim() === '') return;
-    // This will need to be updated to pass a service ID
-    // sendMessage(otherUser.id, newMessage);
-    console.log("Send message functionality to be updated.");
+    if (newMessage.trim() === '' || !serviceId) return;
+    sendMessage(serviceId, newMessage.trim());
     setNewMessage('');
+  };
+
+  if (!currentUser || !service) {
+    return <NotFoundPage />;
   }
 
-  const chatKey = [currentUser.id, otherUser.id].sort().join('-');
-  const messages = chats[chatKey] || [];
+  const otherUserId = currentUser.id === service.autor_id ? service.client_id : service.autor_id;
+  const otherUser = users.find(u => u.id === otherUserId);
+
+  if (!otherUser) {
+    return <p>Loading user...</p>;
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] bg-secondary">
       {/* Chat Header */}
       <div className="bg-white border-b border-gray-200 px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex items-center space-x-4">
-                <Link to={`/profile/${otherUser.id}`}>
-                    <img className="h-10 w-10 rounded-full object-cover" src={otherUser.avatar_url} alt={otherUser.nome}/>
-                </Link>
-                <div>
-                    <Link to={`/profile/${otherUser.id}`} className="font-bold text-text-primary hover:underline">{otherUser.nome}</Link>
-                    <p className="text-sm text-green-500">Online</p>
-                </div>
+        <div className="flex items-center space-x-4">
+          <Link to={`/profile/${otherUser.id}`}>
+            <img className="h-10 w-10 rounded-full object-cover" src={otherUser.avatar_url} alt={otherUser.nome}/>
+          </Link>
+          <div>
+            <Link to={`/profile/${otherUser.id}`} className="font-bold text-text-primary hover:underline">{otherUser.nome}</Link>
+            <p className="text-sm text-text-secondary">Conversa sobre: <span className="font-semibold">{service.titulo}</span></p>
           </div>
+        </div>
       </div>
       
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         <div className="space-y-4">
-            {messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.sender_id === currentUser.id ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-                    <div className={`max-w-xs lg:max-w-md p-3 rounded-lg shadow-sm ${msg.sender_id === currentUser.id ? 'bg-primary text-white' : 'bg-white text-text-primary'}`}>
-                        <p>{msg.content}</p>
-                        <p className={`text-xs mt-1 ${msg.sender_id === currentUser.id ? 'text-blue-200' : 'text-gray-500'} text-right`}>{new Date(msg.created_at).toLocaleTimeString()}</p>
-                    </div>
-                </div>
-            ))}
-             <div ref={messagesEndRef} />
+          {messages.map(msg => (
+            <div key={msg.id} className={`flex ${msg.sender_id === currentUser.id ? 'justify-end' : 'justify-start'} animate-fade-in`}>
+              <div className={`max-w-xs lg:max-w-md p-3 rounded-lg shadow-sm ${msg.sender_id === currentUser.id ? 'bg-primary text-white' : 'bg-white text-text-primary'}`}>
+                <p>{msg.content}</p>
+                <p className={`text-xs mt-1 ${msg.sender_id === currentUser.id ? 'text-blue-200' : 'text-gray-500'} text-right`}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              </div>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
         </div>
       </div>
       

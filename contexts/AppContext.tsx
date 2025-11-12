@@ -12,8 +12,7 @@ interface AppContextType {
   acceptService: (serviceId: string, clientId: string) => void;
   deliverService: (serviceId: string, fileName: string, message: string) => void;
   confirmCompletion: (serviceId: string) => void;
-  chats: Record<string, Message[]>;
-  sendMessage: (recipientId: string, text: string, serviceId: string) => void;
+  sendMessage: (serviceId: string, content: string) => void;
   showToast: (message: string) => void;
   session: Session | null;
 }
@@ -136,8 +135,18 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   };
 
-  // Placeholder for chat
-  const sendMessage = () => console.warn('sendMessage not implemented');
+  const sendMessage = async (serviceId: string, content: string) => {
+    if (!currentUser) return;
+    const newMessage = {
+      service_id: serviceId,
+      sender_id: currentUser.id,
+      content: content,
+    };
+    const { error } = await supabase.from('messages').insert(newMessage);
+    if (error) {
+      console.error('Error sending message:', error);
+    }
+  };
 
   const value = {
     users,
@@ -148,7 +157,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     acceptService,
     deliverService,
     confirmCompletion,
-    chats: {},
     sendMessage,
     showToast,
     session,

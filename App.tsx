@@ -47,7 +47,7 @@ const AppRoutes: React.FC = () => {
             <Route path="/service/:id" element={<ServiceDetailPage />} />
             <Route path="/create" element={<CreateServicePage />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
-            <Route path="/chat/:id" element={<ChatPage />} />
+            <Route path="/chat/:serviceId" element={<ChatPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>

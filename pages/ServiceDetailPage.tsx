@@ -28,7 +28,7 @@ export const ServiceDetailPage: React.FC = () => {
     if(!currentUser) return;
     acceptService(service.id, currentUser.id);
     showToast(t('toast_service_accepted'));
-    navigate(`/chat/${author.id}`);
+    navigate(`/chat/${service.id}`);
   }
 
   const canAccept = currentUser?.tipo === 'client' && service.status === 'disponível' && currentUser.id !== service.autor_id;
