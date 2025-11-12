@@ -13,7 +13,6 @@ export const ProfilePage: React.FC = () => {
   const user = users.find(u => u.id === id);
   
   if (!user) {
-    // In a real app, you'd fetch the user profile here if not found in context
     return <p>Loading profile or not found...</p>;
   }
 
@@ -64,7 +63,7 @@ export const ProfilePage: React.FC = () => {
             <h2 className="text-2xl font-bold text-text-primary mb-4">{t('profile_services_by')} {user.nome}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {userServices.map(service => (
-                <ServiceCard key={service.id} service={service} author={user} />
+                <ServiceCard key={service.id} service={service} />
               ))}
             </div>
           </div>

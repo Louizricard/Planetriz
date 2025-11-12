@@ -27,6 +27,8 @@ interface AppProviderProps {
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -53,48 +55,58 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      const { data: usersData, error: usersError } = await supabase.from('profiles').select('*');
+      if (usersError) console.error('Error fetching users:', usersError);
+      else setUsers(usersData as User[]);
+
+      const { data: servicesData, error: servicesError } = await supabase.from('services').select('*');
+      if (servicesError) console.error('Error fetching services:', servicesError);
+      else setServices(servicesData as Service[]);
+    };
+    fetchInitialData();
+  }, []);
+
   const fetchUserProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
-    if (error) {
-      console.error('Error fetching profile:', error);
-    } else if (data) {
-      setCurrentUser(data as User);
-    }
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    if (error) console.error('Error fetching profile:', error);
+    else setCurrentUser(data as User);
   };
 
   const showToast = (message: string) => {
     setToastMessage(message);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
   const logout = () => {
     supabase.auth.signOut();
   };
 
-  // Placeholder functions to avoid breaking the app, will be implemented next
-  const createService = () => console.warn('createService not implemented');
+  const createService = async (serviceData: Omit<Service, 'id' | 'status' | 'client_id' | 'autor_id'>) => {
+    if (!currentUser) return;
+    const newService = { ...serviceData, autor_id: currentUser.id, status: 'disponível' as const };
+    const { data, error } = await supabase.from('services').insert(newService).select().single();
+    if (error) console.error('Error creating service:', error);
+    else setServices(prev => [...prev, data as Service]);
+  };
+
+  // Placeholder functions
   const acceptService = () => console.warn('acceptService not implemented');
   const deliverService = () => console.warn('deliverService not implemented');
   const confirmCompletion = () => console.warn('confirmCompletion not implemented');
   const sendMessage = () => console.warn('sendMessage not implemented');
 
   const value = {
-    users: [], // Placeholder, will be fetched from Supabase
-    services: [], // Placeholder, will be fetched from Supabase
+    users,
+    services,
     currentUser,
     logout,
     createService,
     acceptService,
     deliverService,
     confirmCompletion,
-    chats: {}, // Placeholder
+    chats: {},
     sendMessage,
     showToast,
     session,

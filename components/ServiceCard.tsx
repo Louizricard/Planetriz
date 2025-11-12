@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Service, User } from '../types';
+import { Service } from '../types';
 import { Button } from './Button';
 import { useI18n } from '../hooks/useI18n';
 import { useApp } from '../hooks/useApp';
@@ -8,16 +8,29 @@ import { StatusBadge } from './StatusBadge';
 
 interface ServiceCardProps {
   service: Service;
-  author?: User;
 }
 
-export const ServiceCard: React.FC<ServiceCardProps> = ({ service, author }) => {
+export const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
   const navigate = useNavigate();
   const { t } = useI18n();
+  const { users } = useApp();
+  
+  const author = users.find(u => u.id === service.autor_id);
 
   if (!author) {
-    // You might want a loading state here
-    return <div className="bg-white rounded-xl shadow-sm border border-transparent p-6 animate-pulse">Loading...</div>;
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-transparent p-6 animate-pulse">
+        <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+        <div className="h-8 bg-gray-200 rounded w-1/2 mb-4"></div>
+        <div className="flex items-center">
+          <div className="h-10 w-10 rounded-full bg-gray-200"></div>
+          <div className="ml-3 space-y-2">
+            <div className="h-4 bg-gray-200 rounded w-24"></div>
+            <div className="h-3 bg-gray-200 rounded w-16"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

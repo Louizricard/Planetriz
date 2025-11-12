@@ -7,8 +7,7 @@ import { useApp } from '../hooks/useApp';
 export const CreateServicePage: React.FC = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  // Fix: get showToast from useApp to show notifications
-  const { createService, currentUser, showToast } = useApp();
+  const { createService, showToast } = useApp();
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -20,19 +19,16 @@ export const CreateServicePage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser) return;
-
+    
     createService({
       titulo: title,
       descricao: description,
       categoria: category,
       prazo: deadline,
       preço: price,
-      autorId: currentUser.id
     });
-    // Fix: Show toast message from the component
-    showToast(t('toast_service_created'));
     
+    showToast(t('toast_service_created'));
     navigate('/dashboard');
   };
 
