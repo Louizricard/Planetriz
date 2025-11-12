@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useI18n } from '../hooks/useI18n';
 import { Button } from '../components/Button';
 import { BriefcaseIcon } from '../components/Icons';
-import { supabase } from '../integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 
 export const LoginPage: React.FC = () => {
   const { t, setLanguage, language } = useI18n();

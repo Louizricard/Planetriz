@@ -4,7 +4,7 @@ import { useI18n } from '../hooks/useI18n';
 import { Button } from '../components/Button';
 import { BriefcaseIcon } from '../components/Icons';
 import { UserType } from '../types';
-import { supabase } from '../integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 
 export const RegisterPage: React.FC = () => {
   const { t } = useI18n();
