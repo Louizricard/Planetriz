@@ -1,20 +1,21 @@
 import React, { createContext, useState, ReactNode, useEffect } from 'react';
 import { User, Service, Message } from '../types';
-import { MOCK_USERS, MOCK_SERVICES } from '../constants';
+import { supabase } from '../integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
 
 interface AppContextType {
   users: User[];
   services: Service[];
   currentUser: User | null;
-  login: (userId: number) => void;
   logout: () => void;
-  createService: (serviceData: Omit<Service, 'id' | 'status' | 'delivery'>) => void;
-  acceptService: (serviceId: number, clientId: number) => void;
-  deliverService: (serviceId: number, fileName: string, message: string) => void;
-  confirmCompletion: (serviceId: number) => void;
+  createService: (serviceData: Omit<Service, 'id' | 'status' | 'client_id' | 'autor_id'>) => void;
+  acceptService: (serviceId: string, clientId: string) => void;
+  deliverService: (serviceId: string, fileName: string, message: string) => void;
+  confirmCompletion: (serviceId: string) => void;
   chats: Record<string, Message[]>;
-  sendMessage: (recipientId: number, text: string) => void;
+  sendMessage: (recipientId: string, text: string, serviceId: string) => void;
   showToast: (message: string) => void;
+  session: Session | null;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -24,23 +25,48 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
-  const [services, setServices] = useState<Service[]>(MOCK_SERVICES);
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const savedUserId = localStorage.getItem('freelance-user-id');
-    if (savedUserId) {
-        return MOCK_USERS.find(u => u.id === parseInt(savedUserId)) || null;
-    }
-    return null;
-  });
-  const [chats, setChats] = useState<Record<string, Message[]>>({
-    '1-2': [
-        { id: 1, senderId: 2, text: "Olá Maria, tudo bem? Vi seu perfil e gostei muito do seu trabalho de criação de logos.", timestamp: "10:00 AM"},
-        { id: 2, senderId: 1, text: "Olá João! Que bom que gostou. Fico feliz em ajudar. Qual a sua ideia?", timestamp: "10:01 AM"},
-    ]
-  });
+  const [session, setSession] = useState<Session | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+        fetchUserProfile(session.user.id);
+      }
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        setSession(session);
+        if (session) {
+          fetchUserProfile(session.user.id);
+        } else {
+          setCurrentUser(null);
+        }
+      }
+    );
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching profile:', error);
+    } else if (data) {
+      setCurrentUser(data as User);
+    }
+  };
+
   const showToast = (message: string) => {
     setToastMessage(message);
     setTimeout(() => {
@@ -48,72 +74,30 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }, 3000);
   };
 
-  const login = (userId: number) => {
-    const user = users.find(u => u.id === userId);
-    if (user) {
-      setCurrentUser(user);
-      localStorage.setItem('freelance-user-id', String(user.id));
-    }
-  };
-
   const logout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem('freelance-user-id');
+    supabase.auth.signOut();
   };
 
-  const createService = (serviceData: Omit<Service, 'id'|'status'|'delivery'>) => {
-    setServices(prev => [
-      ...prev,
-      { ...serviceData, id: prev.length + 1, status: 'disponível' }
-    ]);
-  };
-
-  const acceptService = (serviceId: number, clientId: number) => {
-    setServices(prev =>
-      prev.map(s => s.id === serviceId ? { ...s, status: 'em andamento', clientId } : s)
-    );
-  };
-  
-  const deliverService = (serviceId: number, fileName: string, message: string) => {
-      setServices(prev => 
-        prev.map(s => s.id === serviceId ? {...s, status: 'entregue', delivery: { fileName, message }} : s)
-      );
-  };
-
-  const confirmCompletion = (serviceId: number) => {
-    setServices(prev =>
-      prev.map(s => s.id === serviceId ? { ...s, status: 'concluído' } : s)
-    );
-  };
-
-  const sendMessage = (recipientId: number, text: string) => {
-    if (!currentUser) return;
-    const chatKey = [currentUser.id, recipientId].sort().join('-');
-    const newMessage: Message = {
-        id: Date.now(),
-        senderId: currentUser.id,
-        text,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    setChats(prev => ({
-        ...prev,
-        [chatKey]: [...(prev[chatKey] || []), newMessage]
-    }));
-  }
+  // Placeholder functions to avoid breaking the app, will be implemented next
+  const createService = () => console.warn('createService not implemented');
+  const acceptService = () => console.warn('acceptService not implemented');
+  const deliverService = () => console.warn('deliverService not implemented');
+  const confirmCompletion = () => console.warn('confirmCompletion not implemented');
+  const sendMessage = () => console.warn('sendMessage not implemented');
 
   const value = {
-    users,
-    services,
+    users: [], // Placeholder, will be fetched from Supabase
+    services: [], // Placeholder, will be fetched from Supabase
     currentUser,
-    login,
     logout,
     createService,
     acceptService,
     deliverService,
     confirmCompletion,
-    chats,
+    chats: {}, // Placeholder
     sendMessage,
-    showToast
+    showToast,
+    session,
   };
 
   return (

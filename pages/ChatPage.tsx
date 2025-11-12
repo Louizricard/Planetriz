@@ -12,20 +12,26 @@ export const ChatPage: React.FC = () => {
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const otherUser = users.find(u => u.id === parseInt(otherUserId || ''));
+  const otherUser = users.find(u => u.id === otherUserId);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chats]);
   
-  if(!otherUser || !currentUser){
+  if(!currentUser){
     return <NotFoundPage />;
+  }
+  
+  if(!otherUser){
+    return <p>Loading user...</p>
   }
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if(newMessage.trim() === '') return;
-    sendMessage(otherUser.id, newMessage);
+    // This will need to be updated to pass a service ID
+    // sendMessage(otherUser.id, newMessage);
+    console.log("Send message functionality to be updated.");
     setNewMessage('');
   }
 
@@ -38,7 +44,7 @@ export const ChatPage: React.FC = () => {
       <div className="bg-white border-b border-gray-200 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center space-x-4">
                 <Link to={`/profile/${otherUser.id}`}>
-                    <img className="h-10 w-10 rounded-full object-cover" src={otherUser.avatar} alt={otherUser.nome}/>
+                    <img className="h-10 w-10 rounded-full object-cover" src={otherUser.avatar_url} alt={otherUser.nome}/>
                 </Link>
                 <div>
                     <Link to={`/profile/${otherUser.id}`} className="font-bold text-text-primary hover:underline">{otherUser.nome}</Link>
@@ -51,10 +57,10 @@ export const ChatPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         <div className="space-y-4">
             {messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.senderId === currentUser.id ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-                    <div className={`max-w-xs lg:max-w-md p-3 rounded-lg shadow-sm ${msg.senderId === currentUser.id ? 'bg-primary text-white' : 'bg-white text-text-primary'}`}>
-                        <p>{msg.text}</p>
-                        <p className={`text-xs mt-1 ${msg.senderId === currentUser.id ? 'text-blue-200' : 'text-gray-500'} text-right`}>{msg.timestamp}</p>
+                <div key={msg.id} className={`flex ${msg.sender_id === currentUser.id ? 'justify-end' : 'justify-start'} animate-fade-in`}>
+                    <div className={`max-w-xs lg:max-w-md p-3 rounded-lg shadow-sm ${msg.sender_id === currentUser.id ? 'bg-primary text-white' : 'bg-white text-text-primary'}`}>
+                        <p>{msg.content}</p>
+                        <p className={`text-xs mt-1 ${msg.sender_id === currentUser.id ? 'text-blue-200' : 'text-gray-500'} text-right`}>{new Date(msg.created_at).toLocaleTimeString()}</p>
                     </div>
                 </div>
             ))}

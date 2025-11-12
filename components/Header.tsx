@@ -56,7 +56,7 @@ export const Header: React.FC = () => {
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               >
-                <img className="h-9 w-9 rounded-full object-cover" src={currentUser.avatar} alt={currentUser.nome} />
+                <img className="h-9 w-9 rounded-full object-cover" src={currentUser.avatar_url} alt={currentUser.nome} />
                 <span className="hidden lg:inline text-sm font-medium text-text-primary">{currentUser.nome}</span>
                 <ChevronDownIcon className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${dropdownOpen ? 'rotate-180' : ''}`} />
               </button>

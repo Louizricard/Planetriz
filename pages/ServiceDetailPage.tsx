@@ -10,25 +10,28 @@ export const ServiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useI18n();
-  // Fix: get showToast from useApp to show notifications
   const { services, users, currentUser, acceptService, showToast } = useApp();
 
-  const service = services.find(s => s.id === parseInt(id || ''));
+  const service = services.find(s => s.id === id);
+  
   if (!service) {
-    return <NotFoundPage />;
+    return <p>Loading service or not found...</p>;
   }
 
-  const author = users.find(u => u.id === service.autorId) as User;
+  const author = users.find(u => u.id === service.autor_id);
+
+  if (!author) {
+    return <p>Loading author or not found...</p>;
+  }
 
   const handleAccept = () => {
     if(!currentUser) return;
     acceptService(service.id, currentUser.id);
-    // Fix: Show toast message from the component
     showToast(t('toast_service_accepted'));
     navigate(`/chat/${author.id}`);
   }
 
-  const canAccept = currentUser?.tipo === 'client' && service.status === 'disponível' && currentUser.id !== service.autorId;
+  const canAccept = currentUser?.tipo === 'client' && service.status === 'disponível' && currentUser.id !== service.autor_id;
 
   return (
     <div className="bg-secondary min-h-screen py-12 animate-page-enter">
@@ -61,7 +64,7 @@ export const ServiceDetailPage: React.FC = () => {
                 <div className="mt-8 border-t border-gray-200 pt-6">
                     <h3 className="text-lg font-bold text-text-primary">{t('service_details_about_author')}</h3>
                     <div className="mt-4 flex items-center">
-                        <img className="h-14 w-14 rounded-full object-cover" src={author.avatar} alt={author.nome} />
+                        <img className="h-14 w-14 rounded-full object-cover" src={author.avatar_url} alt={author.nome} />
                         <div className="ml-4">
                             <Link to={`/profile/${author.id}`} className="text-lg font-semibold text-text-primary hover:text-primary">{author.nome}</Link>
                             <p className="text-sm text-text-secondary capitalize">{author.tipo}</p>

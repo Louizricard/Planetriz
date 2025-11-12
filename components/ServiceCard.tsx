@@ -8,13 +8,17 @@ import { StatusBadge } from './StatusBadge';
 
 interface ServiceCardProps {
   service: Service;
+  author?: User;
 }
 
-export const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
+export const ServiceCard: React.FC<ServiceCardProps> = ({ service, author }) => {
   const navigate = useNavigate();
   const { t } = useI18n();
-  const { users } = useApp();
-  const author = users.find(user => user.id === service.autorId) as User;
+
+  if (!author) {
+    // You might want a loading state here
+    return <div className="bg-white rounded-xl shadow-sm border border-transparent p-6 animate-pulse">Loading...</div>;
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-transparent hover:border-border overflow-hidden transform hover:-translate-y-1 transition-all duration-300 hover:shadow-lg flex flex-col">
@@ -25,7 +29,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service }) => {
         </div>
         <h3 className="block mt-1 text-lg leading-tight font-bold text-text-primary h-14">{service.titulo}</h3>
         <div className="mt-4 flex items-center">
-          <img className="h-10 w-10 rounded-full object-cover" src={author.avatar} alt={author.nome} />
+          <img className="h-10 w-10 rounded-full object-cover" src={author.avatar_url} alt={author.nome} />
           <div className="ml-3">
             <p className="text-sm font-medium text-text-primary">{author.nome}</p>
             <p className="text-xs text-text-secondary capitalize">{t(`register_${author.tipo}`)}</p>

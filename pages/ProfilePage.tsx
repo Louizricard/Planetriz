@@ -10,13 +10,14 @@ export const ProfilePage: React.FC = () => {
   const { t } = useI18n();
   const { users, services } = useApp();
 
-  const user = users.find(u => u.id === parseInt(id || ''));
+  const user = users.find(u => u.id === id);
   
   if (!user) {
-    return <NotFoundPage />;
+    // In a real app, you'd fetch the user profile here if not found in context
+    return <p>Loading profile or not found...</p>;
   }
 
-  const userServices = services.filter(s => s.autorId === user.id);
+  const userServices = services.filter(s => s.autor_id === user.id);
   const mockSkills = ['Branding', 'UI/UX Design', 'React', 'Node.js', 'Figma', 'SEO'];
   const mockPortfolio = [1, 2, 3, 4, 5, 6].map(i => `https://picsum.photos/seed/${user.nome}${i}/500/300`);
 
@@ -25,7 +26,7 @@ export const ProfilePage: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Profile Header */}
         <div className="bg-white rounded-xl shadow-lg p-8 md:flex md:items-center md:space-x-8">
-          <img className="h-32 w-32 rounded-full mx-auto md:mx-0 object-cover" src={user.avatar} alt={user.nome} />
+          <img className="h-32 w-32 rounded-full mx-auto md:mx-0 object-cover" src={user.avatar_url} alt={user.nome} />
           <div className="text-center md:text-left mt-4 md:mt-0">
             <h1 className="text-3xl font-bold text-text-primary">{user.nome}</h1>
             <p className="text-primary font-semibold capitalize">{user.tipo}</p>
@@ -63,7 +64,7 @@ export const ProfilePage: React.FC = () => {
             <h2 className="text-2xl font-bold text-text-primary mb-4">{t('profile_services_by')} {user.nome}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {userServices.map(service => (
-                <ServiceCard key={service.id} service={service} />
+                <ServiceCard key={service.id} service={service} author={user} />
               ))}
             </div>
           </div>
