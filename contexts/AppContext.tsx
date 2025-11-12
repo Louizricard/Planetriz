@@ -91,10 +91,52 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     else setServices(prev => [...prev, data as Service]);
   };
 
-  // Placeholder functions
-  const acceptService = () => console.warn('acceptService not implemented');
-  const deliverService = () => console.warn('deliverService not implemented');
-  const confirmCompletion = () => console.warn('confirmCompletion not implemented');
+  const acceptService = async (serviceId: string, clientId: string) => {
+    const { data, error } = await supabase
+      .from('services')
+      .update({ client_id: clientId, status: 'em andamento' })
+      .eq('id', serviceId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error accepting service:', error);
+    } else {
+      setServices(prev => prev.map(s => s.id === serviceId ? data as Service : s));
+    }
+  };
+
+  const deliverService = async (serviceId: string) => {
+    const { data, error } = await supabase
+      .from('services')
+      .update({ status: 'entregue' })
+      .eq('id', serviceId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error delivering service:', error);
+    } else {
+      setServices(prev => prev.map(s => s.id === serviceId ? data as Service : s));
+    }
+  };
+
+  const confirmCompletion = async (serviceId: string) => {
+    const { data, error } = await supabase
+      .from('services')
+      .update({ status: 'concluído' })
+      .eq('id', serviceId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error confirming completion:', error);
+    } else {
+      setServices(prev => prev.map(s => s.id === serviceId ? data as Service : s));
+    }
+  };
+
+  // Placeholder for chat
   const sendMessage = () => console.warn('sendMessage not implemented');
 
   const value = {
